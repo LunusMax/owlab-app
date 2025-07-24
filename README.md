@@ -31,6 +31,7 @@ Owlab is a cognitive training app designed to strengthen your memory, attention,
 
 ## 📂 Project Structure
 
+```
 owlab-app/
 ├── app/
 │   ├── (tabs)/                   # Main tabs (explore, results, etc.)
@@ -43,6 +44,7 @@ owlab-app/
 │   ├── fonts/                   # Custom fonts (Raleway)
 │   └── images/                  # App logos and illustrations
 ├── README.md
+```
 
 ## 🔒 License
 This is a closed-source project.
