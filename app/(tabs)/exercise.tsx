@@ -1,26 +1,34 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FeedbackOverlay } from '../../components/FeedbackOverlay';
 import { questions } from '../data/questions';
 
 export default function ExerciseScreen() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
 
   const question = questions[current];
+  const progress = (current + 1) / questions.length;
 
-  const handleAnswer = (choice: number) => {
-    const isCorrect = choice === question.correct;
+  const handleAnswer = (choiceIndex: number) => {
+    const correct = choiceIndex === question.correct;
+    setIsCorrect(correct);
+    setShowFeedback(true);
 
-    Alert.alert(
-      isCorrect ? 'Correto ✅' : 'Errado ❌',
-      isCorrect ? 'Boa! Vamos para a próxima.' : 'Tente prestar mais atenção.',
-      [{ text: 'Continuar', onPress: goNext }]
-    );
+    if (correct) {
+      setScore((prev) => prev + 1);
+    }
 
-    if (isCorrect) setScore((prev) => prev + 1);
+    setTimeout(() => {
+      setShowFeedback(false);
+      goNext();
+    }, 1000);
   };
+
 
   const goNext = () => {
     if (current + 1 < questions.length) {
@@ -30,19 +38,31 @@ export default function ExerciseScreen() {
     }
   };
 
+
   return (
     <View style={styles.container}>
+      {/* Barra de progresso */}
+      <View style={styles.progressBarBackground}>
+        <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
+      </View>
+
       <Text style={styles.question}>{question.prompt}</Text>
-      {question.options.map((option) => (
+
+      {/* Mapeando as opções e passando o índice para handleAnswer */}
+      {question.options.map((option, index) => (
         <TouchableOpacity
-          key={option}
+          key={index.toString()} // É mais seguro usar o índice como chave aqui
           style={styles.option}
-          onPress={() => handleAnswer(option)}
+          onPress={() => handleAnswer(index)} // Passando o índice da opção
+          disabled={showFeedback}
         >
           <Text style={styles.optionText}>{option}</Text>
         </TouchableOpacity>
       ))}
+
       <Text style={styles.score}>Pontuação: {score}</Text>
+
+      {showFeedback && <FeedbackOverlay correct={isCorrect} />}
     </View>
   );
 }
@@ -53,6 +73,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a182a',
     padding: 24,
     justifyContent: 'center',
+  },
+  progressBarBackground: {
+    height: 10,
+    backgroundColor: '#3a3a50',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 24,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#6c63ff',
   },
   question: {
     fontSize: 22,
